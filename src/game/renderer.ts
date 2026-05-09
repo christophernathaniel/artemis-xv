@@ -67,27 +67,25 @@ export function drawBackground(
 export function drawBoundary(
     ctx: CanvasRenderingContext2D,
     camera: Camera,
-    screenWidth: number,
-    screenHeight: number,
-    time: number
+    time: number,
+    zoom: number
 ): void {
 
-
     // Convert world boundary to screen coordinates
-    const left = 0 - camera.x;
-    const top = 0 - camera.y;
-    const right = WORLD_WIDTH - camera.x;
-    const bottom = WORLD_HEIGHT - camera.y;
+    const left = (0 - camera.x) * zoom;
+    const top = (0 - camera.y) * zoom;
+    const right = (WORLD_WIDTH - camera.x) * zoom;
+    const bottom = (WORLD_HEIGHT - camera.y) * zoom;
 
     const pulse = 0.5 + Math.sin(time * 3) * 0.3;
     ctx.strokeStyle = `rgba(255, 60, 60, ${pulse})`;
-    ctx.lineWidth = 2;
-    ctx.setLineDash([10, 15]);
+    ctx.lineWidth = 2 * zoom;
+    ctx.setLineDash([10 * zoom, 15 * zoom]);
     ctx.strokeRect(
-        left + BOUNDARY_PADDING,
-        top + BOUNDARY_PADDING,
-        (right - left) - BOUNDARY_PADDING * 2,
-        (bottom - top) - BOUNDARY_PADDING * 2
+        left + BOUNDARY_PADDING * zoom,
+        top + BOUNDARY_PADDING * zoom,
+        (right - left) - BOUNDARY_PADDING * 2 * zoom,
+        (bottom - top) - BOUNDARY_PADDING * 2 * zoom
     );
     ctx.setLineDash([]);
 }

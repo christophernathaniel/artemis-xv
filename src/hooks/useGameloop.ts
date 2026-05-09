@@ -65,7 +65,7 @@ export function useGameLoop({ canvasRef, onHUDUpdate, onStateUpdate, onGameOver 
     // Instead of moving objects by a fixed number of pixels per frame,
     // multiply by dt: position += speed * dt
 
-    const loop = useCallback((timestamp: number) => {
+    const loop = useCallback(function frame(timestamp: number) {
 
         // Calculate delta time (in seconds)
         if (lastTimeRef.current === 0) lastTimeRef.current = timestamp;
@@ -81,10 +81,13 @@ export function useGameLoop({ canvasRef, onHUDUpdate, onStateUpdate, onGameOver 
         const ctx = canvas.getContext('2d');
         if (!ctx) return;
 
+        const dpr = window.devicePixelRatio || 1;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
         const state = stateRef.current;
         const input = inputRef.current;
-        const W = canvas.width;
-        const H = canvas.height
+        const W = canvas.clientWidth;
+        const H = canvas.clientHeight
 
 
 
@@ -100,7 +103,7 @@ export function useGameLoop({ canvasRef, onHUDUpdate, onStateUpdate, onGameOver 
         }
 
         drawBackground(ctx, state.camera, W, H, state.elapsedTime, state.camera.z);
-        drawBoundary(ctx, state.camera, W, H, state.elapsedTime);
+        drawBoundary(ctx, state.camera, state.elapsedTime, state.camera.z);
 
         updatePlayer(state.player, input, dt);
         updateAntimatter(state.antimatter, dt);
@@ -150,7 +153,7 @@ export function useGameLoop({ canvasRef, onHUDUpdate, onStateUpdate, onGameOver 
 
 
         const pScreen = worldToScreen(state.player.pos.x, state.player.pos.y, state.camera);
-        drawPlayer(ctx, state.player, pScreen.x, pScreen.y, state.camera.z);
+        drawPlayer(ctx, state.player, pScreen.x, pScreen.y, state.camera.z, input);
 
         hudThrottleRef.current += dt;
         if (hudThrottleRef.current >= 0.1) {
@@ -178,7 +181,7 @@ export function useGameLoop({ canvasRef, onHUDUpdate, onStateUpdate, onGameOver 
         processCollisions(state);
 
         // Schedule next frame
-        animFrameRef.current = requestAnimationFrame(loop);
+        animFrameRef.current = requestAnimationFrame(frame);
     }, [canvasRef, onHUDUpdate, onStateUpdate, onGameOver]);
 
     useEffect(() => {

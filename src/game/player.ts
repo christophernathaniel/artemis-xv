@@ -1,6 +1,20 @@
 import type { Player } from './types';
 import type { InputState } from './input';
 
+import shipImageUrl from './player/assets/ship.svg';
+import flamesImageUrl from './player/assets/flames.svg';
+import afterburnerImageUrl from './player/assets/afterburner.svg';
+
+const shipImage = new Image();
+shipImage.src = shipImageUrl;
+
+const flamesImage = new Image();
+flamesImage.src = flamesImageUrl;
+
+const afterburnerImage = new Image();
+afterburnerImage.src = afterburnerImageUrl;
+
+
 import {
     PLAYER_RADIUS,
     PLAYER_MAX_HEALTH,
@@ -85,16 +99,18 @@ export function updatePlayer(
 
     // START MOVEMENT LOGIC ------------------------------
     // const speed = player.isDodging ? PLAYER_DODGE_SPEED : PLAYER_SPEED;
-    const acceleration: number = player.isDodging ? 1400 : 400;
+    const acceleration: number = player.isDodging ? 1400 : 150;
     const maxSpeed: number = player.isDodging ? PLAYER_DODGE_SPEED : PLAYER_SPEED;
-    const drag: number = 0.95;
+    const drag: number = 0.998;
 
     let dx = 0;
     let dy = 0;
-    if (input.up) dy -= 1;
-    if (input.down) dy += 1;
-    if (input.left) dx -= 1;
-    if (input.right) dx += 1;
+    if (input.up) dy -= 0.5;
+    if (input.down) dy += 0.5;
+    if (input.left) dx -= 0.5;
+    if (input.right) dx += 0.5;
+
+
 
 
     // Normalise diagonal movement so you don't go faster diagonally
@@ -107,26 +123,26 @@ export function updatePlayer(
     // player.vel.x = dx * speed;
     // player.vel.y = dy * speed;
 
+
+
+
+
     // update angle
     if (dx !== 0 || dy !== 0) {
         // player.angle = Math.atan2(dy, dx);  // atan2 gives angle from direction vector
         player.vel.x += dx * acceleration * dt;
         player.vel.y += dy * acceleration * dt;
-        player.angle = Math.atan2(dy, dx);
-    } else {
-        player.vel.x *= drag;
-        player.vel.y *= drag;
+
+        player.angle = Math.atan2(player.vel.y, player.vel.x) + Math.PI * 2; // point ship in direction of movement
     }
 
-    if (player.zoom) {
-        zoom += 0.5 * dt;
-    }
-
-    const speed = Math.sqrt(player.vel.x * player.vel.x + player.vel.y * player.vel.y);
-    if (speed > maxSpeed) {
-        player.vel.x = (player.vel.x / speed) * maxSpeed;
-        player.vel.y = (player.vel.y / speed) * maxSpeed;
-    }
+    // MAX SPEED LOGIC
+    // const speed = Math.sqrt(player.vel.x * player.vel.x + player.vel.y * player.vel.y);
+    // if (speed > maxSpeed) {
+    //     player.vel.x = (player.vel.x / speed) * maxSpeed;
+    //     player.vel.y = (player.vel.y / speed) * maxSpeed;
+    // }
+    // END MAX SPEED LOGIC
 
     // Apply velocity
     player.pos.x += player.vel.x * dt;
@@ -166,6 +182,7 @@ export function drawPlayer(
     screenX: number,
     screenY: number,
     zoom: number,
+    input: InputState,
 ): void {
     ctx.save(); // save current transformation state
 
@@ -178,8 +195,8 @@ export function drawPlayer(
     const r = player.radius * zoom;
 
     // START SHIELD EFFECT ------------------------------
-    if (player.shield > 0) {
-        const shieldAlpha = (player.shield / 100) * 0.4;
+    if (player.shield > 10) {
+        const shieldAlpha = (player.shield / 100) * 1;
         ctx.beginPath();
         ctx.arc(0, 0, r + 8 * zoom, 0, Math.PI * 2);
         ctx.strokeStyle = `rgba(80, 180, 255, ${shieldAlpha})`;
@@ -198,37 +215,63 @@ export function drawPlayer(
     // }
     // END INVINCIBILITY FLASH ------------------------------
 
+    const size = player.radius * 2.7 * zoom; // SHIP SIze
 
-    const isMoving = player.vel.x !== 0 || player.vel.y !== 0;
+    const isMoving =
+        player.vel.x < -20 || player.vel.x > 20 ||
+        player.vel.y > 20 || player.vel.y < -20;
 
-    if (isMoving) {
+
+    const isUserMoving = input.up || input.down || input.left || input.right;
+
+    if (isUserMoving && !player.isDodging) {
+
+
+        if (flamesImage.complete) {
+            ctx.drawImage(flamesImage, -size / 2, -size / 2.5, size, size);
+        }
+
         // START ENGINE GLOW ------------------------------
         const engineGlow = ctx.createRadialGradient(0, r * 0.6, 0, 0, r * 0.6, r * 0.9);
         engineGlow.addColorStop(0, 'rgba(255, 120, 30, 0.9)');
         engineGlow.addColorStop(1, 'rgba(255, 60, 0, 0)');
         ctx.beginPath();
-        ctx.ellipse(0, r * 0.6, r * 0.35 * zoom, r * 0.7 * zoom, 0, 0, Math.PI * 2);
+        ctx.ellipse(0, r * 0.6, r * 2 * zoom, r * 2 * zoom, 0, 0, Math.PI * 2);
         ctx.fillStyle = engineGlow;
         ctx.fill();
         // END ENGINE GLOW ------------------------------
+
+
+    }
+    if (isUserMoving && player.isDodging) {
+
+        if (afterburnerImage.complete) {
+            ctx.drawImage(afterburnerImage, -size / 2, -size / 2.5, size, size);
+        }
+
     }
 
 
     // START SHIP BODY ------------------------------
-    ctx.beginPath();
-    ctx.moveTo(0, -r); // nose
-    ctx.lineTo(r * 0.7, r * 0.8); // right wingtip
-    ctx.lineTo(-r * 0.7, r * 0.8); // left wingtip
-    ctx.closePath();
 
 
-    ctx.fillStyle = '#000000';
-    ctx.fill();
+    if (shipImage.complete) {
+        ctx.drawImage(shipImage, -size / 2, -size / 2.5, size, size);
+    }
+    // ctx.beginPath();
+    // ctx.moveTo(0, -r); // nose
+    // ctx.lineTo(r * 0.7, r * 0.8); // right wingtip
+    // ctx.lineTo(-r * 0.7, r * 0.8); // left wingtip
+    // ctx.closePath();
 
-    // ship outline 
-    ctx.strokeStyle = '#7dd4fc';
-    ctx.lineWidth = 2;
-    ctx.stroke();
+
+    // ctx.fillStyle = '#000000';
+    // ctx.fill();
+
+    // // ship outline 
+    // ctx.strokeStyle = '#7dd4fc';
+    // ctx.lineWidth = 2;
+    // ctx.stroke();
 
     ctx.restore();
 

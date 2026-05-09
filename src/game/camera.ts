@@ -1,16 +1,14 @@
 import type { Camera, GameState, Player } from './types';
-import { WORLD_WIDTH, WORLD_HEIGHT, ZOOM_SPEED, ZOOM_MIN, ZOOM_MAX } from './constants';
+import {
+    WORLD_WIDTH,
+    WORLD_HEIGHT,
+    ZOOM_SPEED,
+    ZOOM_MIN,
+    ZOOM_MAX
+} from './constants';
 import type { InputState } from './input';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// updateCamera
-// 
-// The camera x,y is the top-left corner of the visible area in world space.
-// We want the player to always be in the centre of the screen.
-// So: camera.x = player.pos.x - screenWidth / 2
-// 
-// We clamp so the camera never shows outside the world boundaries.
-// ─────────────────────────────────────────────────────────────────────────────
+
 export function updateCamera(
     camera: Camera,
     player: Player,
@@ -44,10 +42,7 @@ export function updateCamera(
 
 
 
-// ─────────────────────────────────────────────────────────────────────────────
-// worldToScreen
-// Convert world coordinates to screen coordinates by subtracting camera position
-// ─────────────────────────────────────────────────────────────────────────────
+// Convert 'world' coordinates to 'screen' coordinates based on camera position and zoom
 
 export function worldToScreen(worldX: number, worldY: number, camera: Camera): { x: number; y: number, z: number } {
     return {
@@ -56,6 +51,7 @@ export function worldToScreen(worldX: number, worldY: number, camera: Camera): {
     };
 }
 
+// Drop off objects that are outside the screen bounds (with some buffer so they don't pop in/out)
 export function isOnScreen(worldX: number, worldY: number, radius: number, camera: Camera, screenWidth: number, screenHeight: number): boolean {
     const buffer = radius + 50; // Extra buffer so objects don't pop in/out
 

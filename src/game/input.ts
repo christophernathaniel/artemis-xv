@@ -11,6 +11,7 @@ export interface InputState {
     powerup: boolean; // R
     zoomIn: boolean; // E
     zoomOut: boolean; // Q
+    pause: boolean; // ESC
 }
 
 // Create fresh input state
@@ -26,6 +27,7 @@ export function createInputState(): InputState {
         powerup: false,
         zoomIn: false,
         zoomOut: false,
+        pause: false,
     }
 }
 
@@ -46,6 +48,7 @@ export function setupInputListeners(input: InputState): () => void {
             case 'KeyR': input.powerup = true; break;
             case 'KeyE': input.zoomIn = true; break;
             case 'KeyQ': input.zoomOut = true; break;
+            case 'Escape': input.pause = !input.pause; break;
         }
     };
 
@@ -60,6 +63,7 @@ export function setupInputListeners(input: InputState): () => void {
             case 'KeyR': input.powerup = false; break;
             case 'KeyE': input.zoomIn = false; break;
             case 'KeyQ': input.zoomOut = false; break;
+            // case 'Escape': input.pause = false; break;
         }
     };
 

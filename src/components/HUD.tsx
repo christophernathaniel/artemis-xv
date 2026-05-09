@@ -4,6 +4,9 @@ import { PLAYER_DODGE_RECHARGE } from '../game/constants';
 import { HUDScore } from './HUD/HUDScore';
 import { HUDLives } from './HUD/HUDLives';
 import { useState } from 'react';
+import { HUDHealth } from './HUD/HUDHealth';
+import { HUDShield } from './HUD/HUDShield';
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 // HUD (Heads-Up Display)
@@ -25,7 +28,7 @@ function formatTime(seconds: number): string {
 }
 
 export function HUD({ data, state }: HUDProps) {
-    const [inputValue, setInputValue] = useState('');
+    // const [inputValue, setInputValue] = useState('');
 
     return (
         <div style={{
@@ -37,17 +40,19 @@ export function HUD({ data, state }: HUDProps) {
             userSelect: 'none',     // Prevent text selection
         }}>
 
-            <input type="text" value={inputValue} onChange={(e) => setInputValue(e.target.value)} />
+            {/* <input type="text" value={inputValue} onChange={(e) => setInputValue(e.target.value)} /> */}
 
-            <HUDScore score={data.score} />
+            {/* <HUDScore score={data.score} /> */}
+
+            <HUDShield shield={data.shield} />
+
+            <HUDHealth health={data.health} />
 
             <HUDLives lives={data.lives} />
 
-            Time: {state.elapsedTime}
+            Time: {formatTime(state.elapsedTime)}
 
-            Health: {data.health}
-            Shield: {data.shield}
-            Lives: {data.lives}
+
             Score: {data.score}
             {/* Time: {formatTime(data.elapsedTime)} */}
             Dodge: {data.dodgeCharges} / {PLAYER_DODGE_RECHARGE}

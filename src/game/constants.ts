@@ -8,22 +8,22 @@ export const WORLD_HEIGHT = 4000;
 
 
 // the player variables ---------------------------------------------
-export const PLAYER_SPEED = 320; // pixels per second
+export const PLAYER_SPEED = 80; // pixels per second
 export const PLAYER_RADIUS = 16; // for collisions
 export const PLAYER_MAX_HEALTH = 100;
 export const PLAYER_MAX_SHIELD = 100;
 
-export const PLAYER_SHIELD_REGEN = 8; // # of sheild per second
-export const SHIELD_REGEN_COOLDOWN = 7; // seconds after taking damage before regen starts
+export const PLAYER_SHIELD_REGEN = 15; // # of sheild per second
+export const SHIELD_REGEN_COOLDOWN = 5.5; // seconds after taking damage before regen starts
 export const PLAYER_START_LIVES = 5;
 
 export const PLAYER_INVINCIBILITY_DURATION = 2.5; // seconds of invincibility
 
 // Dodge variables
-export const PLAYER_DODGE_SPEED = 500; // pixels per second
-export const PLAYER_DODGE_DURATION = 0.18; // seconds
+export const PLAYER_DODGE_SPEED = 280; // pixels per second
+export const PLAYER_DODGE_DURATION = 2; // seconds
 export const PLAYER_DODGE_CHARGES = 3; // total amount of charges
-export const PLAYER_DODGE_RECHARGE = 60; // seconds to charge dodge
+export const PLAYER_DODGE_RECHARGE = 30; // seconds to charge dodge
 
 // END player variables ---------------------------------------------
 
@@ -95,3 +95,4 @@ export const BOUNDARY_PADDING = 30; // death near boundary in px
 export const ZOOM_SPEED = 1.5;
 export const ZOOM_MIN = 0.5;
 export const ZOOM_MAX = 2.5;
+// END Zoom

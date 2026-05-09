@@ -5,6 +5,8 @@ import {
     BLACK_HOLE_PULL_STRENGTH, WORLD_WIDTH, WORLD_HEIGHT
 } from './constants';
 
+import { loseLife } from './player';
+
 function rand(min: number, max: number): number {
     return min + Math.random() * (max - min);
 }
@@ -60,8 +62,9 @@ export function updateBlackHoles(blackHoles: BlackHole[], player: Player, dt: nu
         // If player is inside the black hole, player dies
         if (distance < bh.radius + player.radius) {
             if (player.invincibleTimer <= 0) {
-                player.health = 0;
-                player.shield = 0;
+                player.health = 60;
+                player.shield = 100;
+                loseLife(player);
             }
         }
     }
@@ -82,16 +85,16 @@ export function drawBlackHole(
     // Faint circle showing the pull radius
     ctx.beginPath();
     ctx.arc(0, 0, bh.pullRadius, 0, Math.PI * 2);
-    ctx.strokeStyle = 'rgba(255, 200, 50, 0.08)';
+    ctx.strokeStyle = 'rgba(255, 200, 50, 0.2)';
     ctx.lineWidth = 1;
     ctx.setLineDash([8, 12]);
     ctx.stroke();
     ctx.setLineDash([]);
 
     // ── ACCRETION DISC (spinning rings) ──────────────────────────────────────
-    for (let ring = 3; ring > 0; ring--) {
+    for (let ring = 4; ring > 0; ring--) {
         ctx.save();
-        ctx.rotate(bh.spinAngle * (ring % 2 === 0 ? 1 : -1));
+        ctx.rotate(bh.spinAngle * (ring % 2 === 0 ? 1 : 2));
 
         const ringRadius = bh.radius * (1.2 + ring * 0.5);
         const ringAlpha = 0.6 / ring;
@@ -99,12 +102,12 @@ export function drawBlackHole(
         ctx.beginPath();
         ctx.arc(0, 0, ringRadius * zoom, 0, Math.PI * 2);
         ctx.strokeStyle = `rgba(255, ${200 - ring * 40}, 0, ${ringAlpha})`;
-        ctx.lineWidth = ring === 1 ? 3 * zoom : 2 * zoom;
+        ctx.lineWidth = ring === 1 ? 2 * zoom : 2 * zoom;
         ctx.stroke();
 
         // Add hot spots on the ring
-        for (let j = 0; j < 4; j++) {
-            const spotAngle = (j / 4) * Math.PI * 2 + bh.spinAngle;
+        for (let j = 0; j < 8; j++) {
+            const spotAngle = (j / 8) * Math.PI * 2 + bh.spinAngle;
             ctx.beginPath();
             ctx.arc(
                 Math.cos(spotAngle) * ringRadius * zoom,

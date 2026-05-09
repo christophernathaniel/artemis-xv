@@ -1,8 +1,13 @@
 import type { Debris } from './types';
 
 import {
-    DEBRIS_COUNT, DEBRIS_MIN_RADIUS, DEBRIS_MAX_RADIUS,
-    DEBRIS_MIN_SPEED, DEBRIS_MAX_SPEED, WORLD_WIDTH, WORLD_HEIGHT
+    DEBRIS_COUNT,
+    DEBRIS_MIN_RADIUS,
+    DEBRIS_MAX_RADIUS,
+    DEBRIS_MIN_SPEED,
+    DEBRIS_MAX_SPEED,
+    WORLD_WIDTH,
+    WORLD_HEIGHT
 } from './constants';
 
 // Random helper number generator (between two numbers)

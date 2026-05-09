@@ -56,8 +56,9 @@ function App() {
     if (!canvas) return;
 
     const resize = () => {
-      canvas.width = canvas.clientWidth;
-      canvas.height = canvas.clientHeight;
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = Math.round(canvas.clientWidth * dpr);
+      canvas.height = Math.round(canvas.clientHeight * dpr);
     }
 
     resize();

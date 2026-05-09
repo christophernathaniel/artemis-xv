@@ -23,11 +23,7 @@ export function spawnPowerUps(): PowerUp[] {
     }));
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// activatePowerUp
-// Applies the effect of the nearest collected power-up to the game state.
-// R key triggers this — it finds the closest power-up within range and uses it.
-// ─────────────────────────────────────────────────────────────────────────────
+
 export function activatePowerUp(state: GameState): void {
     const { player, powerUps } = state;
     const ACTIVATION_RANGE = 120; // Player must be close to use it
