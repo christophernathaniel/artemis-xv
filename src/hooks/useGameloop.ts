@@ -144,16 +144,10 @@ export function useGameLoop({ canvasRef, onHUDUpdate, onStateUpdate, onGameOver 
             );
         }
 
-
-
         updateCamera(state.camera, state.player, W, H, state, input);
 
-
-
-
-
         const pScreen = worldToScreen(state.player.pos.x, state.player.pos.y, state.camera);
-        drawPlayer(ctx, state.player, pScreen.x, pScreen.y, state.camera.z, input);
+        drawPlayer(ctx, state.player, pScreen.x, pScreen.y, state.camera.z, input, dt);
 
         hudThrottleRef.current += dt;
         if (hudThrottleRef.current >= 0.1) {

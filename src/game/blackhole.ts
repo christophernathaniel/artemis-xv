@@ -81,7 +81,7 @@ export function drawBlackHole(
     ctx.save();
     ctx.translate(screenX, screenY);
 
-    // ── GRAVITY WELL INDICATOR ────────────────────────────────────────────────
+    // ── GRAVITY WELL  ───────────────────────────────────────────
     // Faint circle showing the pull radius
     ctx.beginPath();
     ctx.arc(0, 0, bh.pullRadius, 0, Math.PI * 2);
@@ -91,7 +91,7 @@ export function drawBlackHole(
     ctx.stroke();
     ctx.setLineDash([]);
 
-    // ── ACCRETION DISC (spinning rings) ──────────────────────────────────────
+    // ── ACCRETION DISC  ──────────────────────────────────────
     for (let ring = 4; ring > 0; ring--) {
         ctx.save();
         ctx.rotate(bh.spinAngle * (ring % 2 === 0 ? 1 : 2));
@@ -121,7 +121,7 @@ export function drawBlackHole(
         ctx.restore();
     }
 
-    // ── EVENT HORIZON (the dark centre) ──────────────────────────────────────
+    // ── EVENT HORIZON ( ─────────────────────────
     const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, bh.radius * 1.3);
     gradient.addColorStop(0, '#000000');
     gradient.addColorStop(0.7, '#050008');

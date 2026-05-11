@@ -1,18 +1,101 @@
 import type { Player } from './types';
 import type { InputState } from './input';
+import { createPulseTimer } from './../components/helpers/createPulseTimer';
+import { createSprite } from '../components/helpers/createSprite';
 
 import shipImageUrl from './player/assets/ship.svg';
 import flamesImageUrl from './player/assets/flames.svg';
 import afterburnerImageUrl from './player/assets/afterburner.svg';
+import leftburnerupImageUrl from './player/assets/leftburner_up.svg';
+import rightburnerupImageUrl from './player/assets/rightburner_up.svg';
+import leftburnerdownImageUrl from './player/assets/leftburner_down.svg';
+import rightburnerdownImageUrl from './player/assets/rightburner_down.svg';
+import thrusterImageUrl from './player/sprites/afterburner.svg';
+import shieldSpriteImageUrl from './player/sprites/shield.svg';
+import shieldImageUrl from './player/assets/shield.svg';
+import shieldEmergencyImageUrl from './player/sprites/shieldEmergency.svg';
+import ship_damange1 from './player/assets/ship_damage1.svg';
 
-const shipImage = new Image();
+const shipImage: HTMLImageElement = new Image();
 shipImage.src = shipImageUrl;
 
-const flamesImage = new Image();
+const flamesImage: HTMLImageElement = new Image();
 flamesImage.src = flamesImageUrl;
 
-const afterburnerImage = new Image();
+const afterburnerImage: HTMLImageElement = new Image();
 afterburnerImage.src = afterburnerImageUrl;
+
+const leftburnerupImage: HTMLImageElement = new Image();
+leftburnerupImage.src = leftburnerupImageUrl;
+
+const rightburnerupImage: HTMLImageElement = new Image();
+rightburnerupImage.src = rightburnerupImageUrl;
+
+const leftburnerdownImage: HTMLImageElement = new Image();
+leftburnerdownImage.src = leftburnerdownImageUrl;
+
+const rightburnerdownImage: HTMLImageElement = new Image();
+rightburnerdownImage.src = rightburnerdownImageUrl;
+
+const afterburnerSprite: HTMLImageElement = new Image();
+afterburnerSprite.src = thrusterImageUrl;
+
+const shieldSpriteImage: HTMLImageElement = new Image();
+shieldSpriteImage.src = shieldSpriteImageUrl;
+
+const shieldImage: HTMLImageElement = new Image();
+shieldImage.src = shieldImageUrl;
+
+const shipDamage1Image: HTMLImageElement = new Image();
+shipDamage1Image.src = ship_damange1;
+
+const shieldEmergencyImage: HTMLImageElement = new Image();
+shieldEmergencyImage.src = shieldEmergencyImageUrl;
+
+const oxygenBurnerMap: { [key: string]: { [key: string]: HTMLImageElement } } = {
+    'up': {
+        'left': leftburnerupImage,
+        'right': rightburnerupImage
+    },
+    'down': {
+        'left': leftburnerdownImage,
+        'right': rightburnerdownImage
+    }
+
+}
+
+let prevFrameAngle: number = 0;
+
+const oxygenBurnerPulse = createPulseTimer(200, 200);
+const oxygenBurnerPulse2 = createPulseTimer(100, 400);
+const afterburnerPulse = createPulseTimer(20, 1000);
+
+const thrusterSprite = createSprite({
+    image: afterburnerSprite,
+    frameWidth: 465,
+    frameHeight: 465,
+    frameCount: 3,
+    frameDurationMs: 80,
+});
+
+const shieldSprite = createSprite({
+    image: shieldSpriteImage,
+    frameWidth: 675,
+    frameHeight: 675,
+    frameCount: 6,
+    frameDurationMs: 40,
+});
+
+const shieldEmergencySprite = createSprite({
+    image: shieldEmergencyImage,
+    frameWidth: 675,
+    frameHeight: 675,
+    frameCount: 6,
+    frameDurationMs: 40,
+});
+
+
+
 
 
 import {
@@ -103,8 +186,8 @@ export function updatePlayer(
     const maxSpeed: number = player.isDodging ? PLAYER_DODGE_SPEED : PLAYER_SPEED;
     const drag: number = 0.998;
 
-    let dx = 0;
-    let dy = 0;
+    let dx: number = 0;
+    let dy: number = 0;
     if (input.up) dy -= 0.5;
     if (input.down) dy += 0.5;
     if (input.left) dx -= 0.5;
@@ -183,6 +266,7 @@ export function drawPlayer(
     screenY: number,
     zoom: number,
     input: InputState,
+    dt: number
 ): void {
     ctx.save(); // save current transformation state
 
@@ -192,19 +276,11 @@ export function drawPlayer(
     // Rotate to match players angle (our 'nose' points up, so we add 90 degrees or PI/2 radians)
     ctx.rotate(player.angle + Math.PI / 2);
 
-    const r = player.radius * zoom;
 
-    // START SHIELD EFFECT ------------------------------
-    if (player.shield > 10) {
-        const shieldAlpha = (player.shield / 100) * 1;
-        ctx.beginPath();
-        ctx.arc(0, 0, r + 8 * zoom, 0, Math.PI * 2);
-        ctx.strokeStyle = `rgba(80, 180, 255, ${shieldAlpha})`;
-        ctx.lineWidth = 2 * zoom;
-        ctx.stroke();
-    }
+
     // END SHIELD EFFECT ------------------------------
 
+    // when something should suppress it temporarily
 
     // START INVINCIBILITY FLASH ------------------------------
     // const isVisible = player.invincibleTimer <= 0 || Math.floor(player.invincibleTimer * 8) % 2 === 0; // flash 8 times per second
@@ -215,63 +291,85 @@ export function drawPlayer(
     // }
     // END INVINCIBILITY FLASH ------------------------------
 
-    const size = player.radius * 2.7 * zoom; // SHIP SIze
+    const size: number = player.radius * 2.7 * zoom; // SHIP Size
 
-    const isMoving =
+
+    // moving velocity
+    const isMoving: boolean =
         player.vel.x < -20 || player.vel.x > 20 ||
         player.vel.y > 20 || player.vel.y < -20;
 
+    // reducing velocity (whilst keys are pressed)
+    const isBraking: boolean =
+        (input.up && player.vel.y > 20) ||
+        (input.down && player.vel.y < -20) ||
+        (input.left && player.vel.x > 20) ||
+        (input.right && player.vel.x < -20);
 
-    const isUserMoving = input.up || input.down || input.left || input.right;
 
+    // if moving via input keys
+    const isUserMoving: boolean = input.up || input.down || input.left || input.right;
+
+    //const angleDiff = player.angle - prevFrameAngle;
+    // angle diff but need to include dt to avoid frame rate issues (if frame rate drops, angle diff will be larger and could mess up the burner flames)
+    const angleDiff: number = (player.angle - prevFrameAngle) / dt;
+
+    const rotateComplex: { [key: string]: boolean } = {
+        'right': angleDiff < -0.3,
+        'left': angleDiff > 0.3
+    }
+
+    prevFrameAngle = player.angle;
+
+
+    // if user is moving
     if (isUserMoving && !player.isDodging) {
-
-
-        if (flamesImage.complete) {
-            ctx.drawImage(flamesImage, -size / 2, -size / 2.5, size, size);
+        if (afterburnerPulse.isOn() && !isBraking) {
+            thrusterSprite.draw(ctx, -size / 2, -size / 2.5, size, size);
         }
 
-        // START ENGINE GLOW ------------------------------
-        const engineGlow = ctx.createRadialGradient(0, r * 0.6, 0, 0, r * 0.6, r * 0.9);
-        engineGlow.addColorStop(0, 'rgba(255, 120, 30, 0.9)');
-        engineGlow.addColorStop(1, 'rgba(255, 60, 0, 0)');
-        ctx.beginPath();
-        ctx.ellipse(0, r * 0.6, r * 2 * zoom, r * 2 * zoom, 0, 0, Math.PI * 2);
-        ctx.fillStyle = engineGlow;
-        ctx.fill();
-        // END ENGINE GLOW ------------------------------
+        ['left', 'right'].forEach((side: string) => {
+            if (rotateComplex[side]) {
+                if (oxygenBurnerPulse.isOn()) {
+                    ctx.drawImage(oxygenBurnerMap['up'][side], -size / 2, -size / 2.5, size, size);
+                }
 
-
+                if (oxygenBurnerPulse2.isOn()) {
+                    ctx.drawImage(oxygenBurnerMap['down'][side], -size / 2, -size / 2.5, size, size);
+                }
+            }
+        });
     }
+
     if (isUserMoving && player.isDodging) {
-
-        if (afterburnerImage.complete) {
-            ctx.drawImage(afterburnerImage, -size / 2, -size / 2.5, size, size);
-        }
+        ctx.drawImage(afterburnerImage, -size / 2, -size / 2.5, size, size);
 
     }
-
 
     // START SHIP BODY ------------------------------
+    if (player.health < 99) {
+        ctx.drawImage(shipDamage1Image, -size / 2, -size / 2.5, size, size);
+    }
 
-
-    if (shipImage.complete) {
+    if (player.health > 99) {
         ctx.drawImage(shipImage, -size / 2, -size / 2.5, size, size);
     }
-    // ctx.beginPath();
-    // ctx.moveTo(0, -r); // nose
-    // ctx.lineTo(r * 0.7, r * 0.8); // right wingtip
-    // ctx.lineTo(-r * 0.7, r * 0.8); // left wingtip
-    // ctx.closePath();
 
+    ctx.restore();
 
-    // ctx.fillStyle = '#000000';
-    // ctx.fill();
+    ctx.translate(screenX, screenY);
 
-    // // ship outline 
-    // ctx.strokeStyle = '#7dd4fc';
-    // ctx.lineWidth = 2;
-    // ctx.stroke();
+    if (player.shield > 1 && player.shield < 37) {
+        shieldEmergencySprite.draw(ctx, -size / 1.5, -size / 1.5, size * 1.3, size * 1.3);
+    }
+
+    if (player.shield > 37 && player.shield < 99) {
+        shieldSprite.draw(ctx, -size / 1.5, -size / 1.5, size * 1.3, size * 1.3);
+    }
+
+    if (player.shield >= 99) {
+        ctx.drawImage(shieldImage, -size / 1.5, -size / 1.5, size * 1.3, size * 1.3);
+    }
 
     ctx.restore();
 
@@ -283,7 +381,7 @@ export function drawPlayer(
 // loose life and respawn in center
 
 export function checkBoundary(player: Player): boolean {
-    const hitEdge =
+    const hitEdge: boolean =
         player.pos.x < BOUNDARY_PADDING ||
         player.pos.x > WORLD_WIDTH - BOUNDARY_PADDING ||
         player.pos.y < BOUNDARY_PADDING ||
